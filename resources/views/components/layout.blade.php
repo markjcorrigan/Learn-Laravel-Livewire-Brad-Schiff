@@ -27,9 +27,8 @@
     <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
 
     <!-- <link href="{{ asset('summernote/summernote-lite.min.css') }}" rel="stylesheet">
-<script src="{{ asset('summernote/summernote-lite.min.js') }}"></script> -->
+    <script src="{{ asset('summernote/summernote-lite.min.js') }}"></script> -->
 
-    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
 
     <link rel="stylesheet" href="{{ asset('fontawesome6/fontawesome6/pro/css/all.css') }}">
 
@@ -119,10 +118,6 @@
         </script>
     {{--
     <script src="{{ asset('fontawesome6/fontawesome6/pro/js/duotone.min.js') }}"></script> --}}
-
-
-
-
 
     <script>
         $('[data-toggle="tooltip"]').tooltip()

@@ -109,9 +109,10 @@ class PostController extends Controller
 
     public function viewSinglePost(Post $post)
     {
-        // $post['title'] = strip_tags(Str::markdown($post->title),'<p><ul><li><strong><h3><br>');
-        $post['body'] = strip_tags(Str::markdown($post->body),'<p><ul><li><strong><h3><br>');
-
+        // $post['body'] = strip_tags(Str::markdown($post->body),'<p><ul><ol><li><strong><h3><h1><i><br>');
+         
+// $allowedTags = '<p><ul><ol><li><strong><h3><h1><i><br>';
+// $post['body'] = strip_tags($post->body, $allowedTags);
 
         return view('single-post',['post'=>$post]);
     }

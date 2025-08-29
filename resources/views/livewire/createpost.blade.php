@@ -45,5 +45,7 @@
             @endif
         </div>
         <button class="btn btn-primary" type="submit">Save Post</button>
+        <br><br>
+        <p>Note: You can use Markdown. **bold** ###Headline### -red -orange -blue</p>
     </form>
 </div>

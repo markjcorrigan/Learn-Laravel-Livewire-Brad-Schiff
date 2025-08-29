@@ -18,6 +18,9 @@ use Illuminate\Http\Request;
 // use Illuminate\Support\Facades\Request;
 use Intervention\Image\Drivers\Gd\Driver;
 use Illuminate\Support\Facades\Validator;
+use Mews\Purifier\Facades\Purifier;
+
+
 
 
 class Createpost extends Component
@@ -34,6 +37,8 @@ class Createpost extends Component
 
 
     public $image;
+
+
 
     public function mount(Post $post)
     {
@@ -69,44 +74,48 @@ class Createpost extends Component
 
 
 
-public function create()
-{
-    $this->validate([
-        'title' => 'required',
-        'body' => 'required',
-        'post_tags' => 'required|string',
-        'post_photo' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048'
-    ]);
+    public function create()
+    {
+        $this->validate([
+            'title' => 'required',
+            'body' => 'required',
+            'post_tags' => 'required|string',
+            'post_photo' => 'nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048'
+        ]);
 
-    $post = new Post();
-    $post->title = $this->title;
-    $post->body = $this->body;
-    $post->post_tags = $this->post_tags;
-    $post->post_slug = strtolower(str_replace(' ', '_', $this->title)); // Use $this->title instead of $post->title
-    $post->user_id = auth()->id();
+        $post = new Post();
+        $post->title = $this->title;
+        $post->body = Purifier::clean($this->body);
+        $post->post_tags = $this->post_tags;
+        $post->post_slug = strtolower(str_replace(' ', '_', $this->title));
+        $post->user_id = auth()->id();
 
-    if ($this->post_photo) {
-        $directory = public_path('uploads/');
-        if (!File::exists($directory)) {
-            File::makeDirectory($directory, 0777, true);
+        if ($this->post_photo) {
+            $directory = public_path('uploads/');
+            if (!File::exists($directory)) {
+                File::makeDirectory($directory, 0777, true);
+            }
+            $originalExtension = $this->post_photo->getClientOriginalExtension();
+            $imageName = 'post_' . hexdec(uniqid()) . '.' . $originalExtension;
+            $manager = new ImageManager(new Driver());
+            $img = $manager->read($this->post_photo->getRealPath());
+            $img = $img->resize(409, 368);
+            if ($originalExtension == 'png' || $originalExtension == 'gif' || $originalExtension == 'svg') {
+                $img = $img->toJpeg(80);
+                $imageName = 'post_' . hexdec(uniqid()) . '.jpg';
+            }
+            $img->save($directory . '/' . $imageName);
+            $post->photo = 'uploads/' . $imageName;
+
         }
-        $originalExtension = $this->post_photo->getClientOriginalExtension();
-        $imageName = 'post_' . hexdec(uniqid()) . '.' . $originalExtension;
-        $manager = new ImageManager(new Driver());
-        $img = $manager->read($this->post_photo->getRealPath());
-        $img = $img->resize(409, 368);
-        if ($originalExtension == 'png' || $originalExtension == 'gif' || $originalExtension == 'svg') {
-            $img = $img->toJpeg(80);
-            $imageName = 'post_' . hexdec(uniqid()) . '.jpg';
-        }
-        $img->save($directory . '/' . $imageName);
-        $post->photo = 'uploads/' . $imageName;
+
+        $post->save();
+        // session()->flash('success', 'Post successfully created.');
+        // return redirect()->route('create-post', $post->id);
+        dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $post->title]));
+
+        return redirect("/post/{$post->id}")->with('success', 'New Post successfully created');
     }
-
-    $post->save();
-    session()->flash('success', 'Post successfully created.');
-    return redirect()->route('create-post', $post->id);
-}
 
 
     public function save()
@@ -120,7 +129,8 @@ public function create()
 
         $post = Post::find($this->post->id);
         $post->title = $this->title;
-        $post->body = $this->body;
+        $post->body = Purifier::clean($this->body);
+
         $post->post_tags = $this->post_tags;
 
         if ($this->post_photo) {
