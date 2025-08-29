@@ -1,0 +1,22 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build"
+    },
+    "devDependencies": {
+        "axios": "^1.1.2",
+        "blade-formatter": "^1.44.2",
+        "laravel-vite-plugin": "^0.7.2",
+        "vite": "^4.0.0"
+    },
+    "dependencies": {
+        "dompurify": "^3.2.6",
+        "laravel-echo": "^1.15.0",
+        "lodash": "^4.17.21",
+        "pusher-js": "^8.0.2",
+        "quill": "^2.0.3",
+        "tinymce": "^8.0.2",
+        "turndown": "^7.2.1"
+    }
+}
