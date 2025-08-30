@@ -16,15 +16,16 @@ use App\Http\Controllers\FileUploadController;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::post('/upload-file', [FileUploadController::class, 'uploadFile'])->middleware('auth:sanctum');
+
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('/login',[UserController::class, 'loginApi']);
-Route::post('/create-post',[PostController::class, 'storeNewPostApi'])->middleware('auth:sanctum');
+Route::post('/login', [UserController::class, 'loginApi']);
+Route::post('/create-post', [PostController::class, 'storeNewPostApi'])->middleware('auth:sanctum');
+Route::delete('/delete-post/{post}', [PostController::class, 'deleteApi'])->middleware('auth:sanctum', 'can:delete,post');
 
 
 

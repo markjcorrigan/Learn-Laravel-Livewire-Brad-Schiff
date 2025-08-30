@@ -74,6 +74,14 @@ class PostPolicy
         return $user->id === $post->user_id;
     }
 
+    public function destroy(User $user, Post $post)
+    {
+        if ($user->isAdmin === 1) {
+            return true;
+        }
+        return $user->id === $post->user_id;
+    }
+
     /**
      * Determine whether the user can restore the model.
      *

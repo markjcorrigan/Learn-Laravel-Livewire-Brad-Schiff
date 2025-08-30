@@ -7,7 +7,7 @@ use Livewire\Component;
 class SinglePost extends Component
 {
 
-        public $successMessage;
+    public $successMessage;
 
     public function mount()
     {

@@ -66,8 +66,9 @@ class Editpost extends Component
         }
 
         $post->save();
+
         session()->flash('success', 'Post successfully updated');
-        return $this->redirect("/post/{$post->id}", navigate: true);
+        return $this->redirect("/profile/" . auth()->user()->username, navigate: true);
 
     }
 

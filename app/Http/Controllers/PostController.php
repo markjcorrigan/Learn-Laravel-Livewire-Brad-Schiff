@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class PostController extends Controller
 {
-   
+
 
     public function search($term)
     {
@@ -34,24 +34,36 @@ class PostController extends Controller
 
         $post->update($incomingFields);
 
-        return back()->with('success','Post successfully updated');
+        return back()->with('success', 'Post successfully updated');
     }
 
 
 
     public function showEditForm(Post $post)
     {
-        return view('edit-post',['post'=> $post]);
+        return view('edit-post', ['post' => $post]);
     }
 
 
 
     public function delete(Post $post)
     {
+        // if (auth()->user()->cannot('delete', $post)) {
+        //     return 'You do not have the permissions to delete this post';
+
+        // }
+
         $post->delete();
         return redirect('/profile/' . auth()->user()->username)->with('success', 'Post successfully deleted');
     }
 
+
+
+    public function deleteApi(Post $post)
+    {
+        $post->delete();
+        return 'true';
+    }
 
 
     public function showCreateForm()
@@ -77,13 +89,11 @@ class PostController extends Controller
 
         $newPost = Post::create($incomingFields);
 
-        dispatch(new SendNewPostEmail(['sendTo'=> auth()->user()->email,'name' => auth()->user()->username, 'title' =>$newPost->title ]));
+        dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $newPost->title]));
 
-        return redirect("/post/{$newPost->id}")->with('success','New Post successfully created');
+        return redirect("/post/{$newPost->id}")->with('success', 'New Post successfully created');
 
     }
-
-
 
 
     public function storeNewPostApi(Request $request)
@@ -91,29 +101,56 @@ class PostController extends Controller
         $incomingFields = $request->validate([
             'title' => 'required',
             'body' => 'required',
+            'post_tags' => 'required|string',
         ]);
 
-        $incomingFields['title'] = strip_tags($incomingFields['title']);
-        $incomingFields['body'] = strip_tags($incomingFields['body']);
-        $incomingFields['user_id'] = auth()->id();
+        $post = new Post();
+        $post->title = strip_tags($incomingFields['title']);
+        $post->body = strip_tags($incomingFields['body']);
+        $post->post_tags = strip_tags($incomingFields['post_tags']);
+        $post->post_slug = strtolower(str_replace(' ', '_', $incomingFields['title']));
+        $post->user_id = auth()->id();
+        $post->photo = ''; // Set photo here
 
-        $newPost = Post::create($incomingFields);
+        $post->save();
 
-        dispatch(new SendNewPostEmail(['sendTo'=> auth()->user()->email,'name' => auth()->user()->username, 'title' =>$newPost->title ]));
+        dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $post->title]));
 
-        return $newPost->id;
-
+        return response()->json(['id' => $post->id, 'message' => 'Post successfully created'], 201);
     }
 
-    
+
+
+
+    // public function storeNewPostApi(Request $request)
+    // {
+    //     $incomingFields = $request->validate([
+    //         'title' => 'required',
+    //         'body' => 'required',
+    //          'post_tags' => 'required|string',
+    //     ]);
+
+    //     $incomingFields['title'] = strip_tags($incomingFields['title']);
+    //     $incomingFields['body'] = strip_tags($incomingFields['body']);
+    //     $incomingFields['user_id'] = auth()->id();
+
+    //     $newPost = Post::create($incomingFields);
+
+    //     dispatch(new SendNewPostEmail(['sendTo'=> auth()->user()->email,'name' => auth()->user()->username, 'title' =>$newPost->title ]));
+
+    //     return $newPost->id;
+
+    // }
+
+
 
     public function viewSinglePost(Post $post)
     {
         // $post['body'] = strip_tags(Str::markdown($post->body),'<p><ul><ol><li><strong><h3><h1><i><br>');
-         
-// $allowedTags = '<p><ul><ol><li><strong><h3><h1><i><br>';
+
+        // $allowedTags = '<p><ul><ol><li><strong><h3><h1><i><br>';
 // $post['body'] = strip_tags($post->body, $allowedTags);
 
-        return view('single-post',['post'=>$post]);
+        return view('single-post', ['post' => $post]);
     }
 }

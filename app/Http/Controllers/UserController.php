@@ -15,7 +15,7 @@ use Intervention\Image\Facades\Image;
 
 class UserController extends Controller
 {
- 
+
     public function storeAvatar(Request $request)
     {
         $request->validate([
@@ -30,9 +30,9 @@ class UserController extends Controller
         $user->save();
 
         if ($oldAvatar != "fallback-avatar.jpg") {
-            Storage::delete(str_replace("/storage/","public/", $oldAvatar));
+            Storage::delete(str_replace("/storage/", "public/", $oldAvatar));
         }
-        return back()->with('success','Your avatar has been updated');
+        return back()->with('success', 'Your avatar has been updated');
     }
 
     public function showAvatarForm()
@@ -40,59 +40,65 @@ class UserController extends Controller
         return view('avatar-form');
     }
 
-    private function getSharedData($user) {
+    private function getSharedData($user)
+    {
         $currentlyFollowing = 0;
         if (auth()->check()) {
-            $currentlyFollowing = Follow::where([['user_id','=', auth()->user()->id],['followeduser','=', $user->id]])->count();
+            $currentlyFollowing = Follow::where([['user_id', '=', auth()->user()->id], ['followeduser', '=', $user->id]])->count();
         }
 
-        View::share('sharedData', ['currentlyFollowing' => $currentlyFollowing,'avatar' => $user->avatar, 'username' => $user->username, 'postCount'=> $user->posts()->count(),
-            'followerCount' => $user->followers()->count(), 'followingCount' => $user->followingTheseUsers()->count()]);
+        View::share('sharedData', [
+            'currentlyFollowing' => $currentlyFollowing,
+            'avatar' => $user->avatar,
+            'username' => $user->username,
+            'postCount' => $user->posts()->count(),
+            'followerCount' => $user->followers()->count(),
+            'followingCount' => $user->followingTheseUsers()->count()
+        ]);
     }
 
-    public function profile(User $user )
+    public function profile(User $user)
     {
         $this->getSharedData($user);
         // return view('profile-posts',['posts'=> $user->posts()->latest()->get()]);
-         return view('profile-posts',['posts'=> $user->posts()->latest()->paginate(10)]);  //spa does not work any longer
+        return view('profile-posts', ['posts' => $user->posts()->latest()->paginate(10)]);  //spa does not work any longer
     }
 
-    public function profileRaw(User $user )
+    public function profileRaw(User $user)
     {
-        return response()->json(['theHTML' => view('profile-posts-only',['posts' => $user->posts()->latest()->get()])->render(),'docTitle' => $user->username . "'s profile"]);
+        return response()->json(['theHTML' => view('profile-posts-only', ['posts' => $user->posts()->latest()->get()])->render(), 'docTitle' => $user->username . "'s profile"]);
     }
 
-    public function profileFollowers(User $user )
-    {
-        $this->getSharedData($user);
-        return view('profile-followers',[ 'followers'=> $user->followers()->latest()->get()]);
-    }
-
-    public function profileFollowersRaw(User $user )
-    {
-        return response()->json(['theHTML' => view('profile-followers-only',['followers' => $user->followers()->latest()->get()])->render(),'docTitle' => $user->username . "'s Followers"]);
-    }
-
-    public function profileFollowing(User $user )
+    public function profileFollowers(User $user)
     {
         $this->getSharedData($user);
-        return view('profile-following',[ 'following'=> $user->followingTheseUsers()->latest()->get()]);
+        return view('profile-followers', ['followers' => $user->followers()->latest()->get()]);
     }
 
-    public function profileFollowingRaw(User $user )
+    public function profileFollowersRaw(User $user)
     {
-        return response()->json(['theHTML' => view('profile-following-only',['following' => $user->followingTheseUsers()->latest()->get()])->render(),'docTitle' => 'Who' . $user->username . "follows"]);
+        return response()->json(['theHTML' => view('profile-followers-only', ['followers' => $user->followers()->latest()->get()])->render(), 'docTitle' => $user->username . "'s Followers"]);
+    }
+
+    public function profileFollowing(User $user)
+    {
+        $this->getSharedData($user);
+        return view('profile-following', ['following' => $user->followingTheseUsers()->latest()->get()]);
+    }
+
+    public function profileFollowingRaw(User $user)
+    {
+        return response()->json(['theHTML' => view('profile-following-only', ['following' => $user->followingTheseUsers()->latest()->get()])->render(), 'docTitle' => 'Who' . $user->username . "follows"]);
     }
 
 
     public function showCorrectHomepage()
     {
         if (auth()->check()) {
-            return view('homepage-feed',['posts' => auth()->user()->feedPosts()->latest()->paginate(10)]);
-        }
-        else {
-            $postCount = Cache::remember('postCount',20,function () {
-               return Post::count();
+            return view('homepage-feed', ['posts' => auth()->user()->feedPosts()->latest()->paginate(10)]);
+        } else {
+            $postCount = Cache::remember('postCount', 20, function () {
+                return Post::count();
             });
             return view('homepage', ['postCount' => $postCount]);
         }
@@ -100,9 +106,9 @@ class UserController extends Controller
 
     public function logout()
     {
-        event(new OurExampleEvent(['username' => auth()->user()->username,'action' => 'logout']));
+        event(new OurExampleEvent(['username' => auth()->user()->username, 'action' => 'logout']));
         auth()->logout();
-        return redirect('/')->with('success','You are now logged out');
+        return redirect('/')->with('success', 'You are now logged out');
     }
 
     public function loginApi(Request $request)
@@ -117,7 +123,7 @@ class UserController extends Controller
             $token = $user->createToken('ourapptoken')->plainTextToken;
             return $token;
         }
-        return 'Sorry';
+        return 'Sorry, Access denied';
     }
 
     public function login(Request $request)
@@ -129,10 +135,10 @@ class UserController extends Controller
 
         if (auth()->attempt(['username' => $incomingFields['loginusername'], 'password' => $incomingFields['loginpassword']])) {
             $request->session()->regenerate();
-            event(new OurExampleEvent(['username' => auth()->user()->username,'action' => 'login']));
-            return redirect('/')->with('success','You are successfully logged in');
+            event(new OurExampleEvent(['username' => auth()->user()->username, 'action' => 'login']));
+            return redirect('/')->with('success', 'You are successfully logged in');
         } else {
-            return redirect('/')->with('failure','Invalid login');
+            return redirect('/')->with('failure', 'Invalid login');
         }
     }
 
@@ -140,16 +146,16 @@ class UserController extends Controller
     public function register(Request $request)
     {
         $incoming_fields = $request->validate([
-            'username' => ['required', 'min:3','max:20',Rule::unique('users','username')],
-            'email' => ['required','email',Rule::unique('users','email')],
-            'password' => ['required','min:4','confirmed'],
+            'username' => ['required', 'min:3', 'max:20', Rule::unique('users', 'username')],
+            'email' => ['required', 'email', Rule::unique('users', 'email')],
+            'password' => ['required', 'min:4', 'confirmed'],
         ]);
 
         $incoming_fields['password'] = bcrypt($incoming_fields['password']);
 
         $user = User::create($incoming_fields);
         auth()->login($user);
-        return redirect('/')->with('success','Thanks for creating an account');
+        return redirect('/')->with('success', 'Thanks for creating an account');
     }
 
 

@@ -119,8 +119,12 @@ class Createpost extends Component
         $post->save();
         dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $post->title]));
         // return $this->redirect("/post/{$post->id}?success=Post successfully created", navigate: true);
+
+
+
         session()->flash('success', 'Post successfully created');
-        return $this->redirect("/post/{$post->id}", navigate: true);
+        return $this->redirect("/profile/" . auth()->user()->username, navigate: true);
+
 
 
     }

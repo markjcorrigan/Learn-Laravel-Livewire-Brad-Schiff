@@ -13,14 +13,14 @@ class CreateSuperAdminCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:create-super-admin';
+    protected $signature = 'app:create-user';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Creates a super admin user (optional)';
+    protected $description = 'Creates a user or super admin (optional)';
 
     /**
      * Execute the console command.
@@ -28,20 +28,31 @@ class CreateSuperAdminCommand extends Command
     public function handle(): int
     {
         // ask if to proceed with creating a super admin
-        if (!$this->confirm('Do you want to create a user? You can confirm Super User at the end of this script', true)) {
-            $this->info('Super admin creation skipped.');
+        if (!$this->confirm('Do you want to create a user? You can confirm this user will be a Super User at the end of running of this script', true)) {
+            $this->info('User creation skipped.');
             return CommandAlias::SUCCESS;
         }
 
         $this->line('Create the first user for your new application');
+
         // ask for the user's name
-        $username = $this->ask('What is the users name?');
+        $username = $this->ask('What is the user\'s name?');
 
         // ask for the user's email
-        $email = $this->ask('What is the users email?');
+        $email = $this->ask('What is the user\'s email?');
 
-        // ask for the user's password
-        $password = $this->secret('What is the users password?');
+        // ask for the user's password and verify it
+        $password = null;
+        while (true) {
+            $password = $this->secret('What is the user\'s password?');
+            $confirmPassword = $this->secret('Confirm the user\'s password?');
+
+            if ($password === $confirmPassword) {
+                break;
+            }
+
+            $this->error('Passwords do not match. Please try again.');
+        }
 
         // ask if the user is a super admin
         $isSuperAdmin = $this->confirm('Is this user a super admin?');
@@ -60,8 +71,7 @@ class CreateSuperAdminCommand extends Command
         }
 
         // output the user
-        $this->info('Normal User or Super User created successfully. Now go and build something amazing!');
-
+        $this->info('User or Super Admin created successfully. Now go and build something amazing!');
         return CommandAlias::SUCCESS;
     }
 }
