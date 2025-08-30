@@ -66,9 +66,12 @@ class Editpost extends Component
         }
 
         $post->save();
-        // session()->flash('success', 'Post successfully updated.');
-        return redirect("/post/{$post->id}")->with('success', 'Post successfully updated');
+        session()->flash('success', 'Post successfully updated');
+        return $this->redirect("/post/{$post->id}", navigate: true);
+
     }
+
+
 
 
     // public function save()

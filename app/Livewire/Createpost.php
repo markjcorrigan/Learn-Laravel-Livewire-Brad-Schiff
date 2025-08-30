@@ -109,12 +109,20 @@ class Createpost extends Component
 
         }
 
-        $post->save();
+        // $post->save();
         // session()->flash('success', 'Post successfully created.');
         // return redirect()->route('create-post', $post->id);
-        dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $post->title]));
+        // dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $post->title]));
 
-        return redirect("/post/{$post->id}")->with('success', 'New Post successfully created');
+        // return redirect("/post/{$post->id}")->with('success', 'New Post successfully created');
+
+        $post->save();
+        dispatch(new SendNewPostEmail(['sendTo' => auth()->user()->email, 'name' => auth()->user()->username, 'title' => $post->title]));
+        // return $this->redirect("/post/{$post->id}?success=Post successfully created", navigate: true);
+        session()->flash('success', 'Post successfully created');
+        return $this->redirect("/post/{$post->id}", navigate: true);
+
+
     }
 
 

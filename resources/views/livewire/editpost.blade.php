@@ -45,7 +45,9 @@
             <img src="{{ asset($post->photo) }}" alt="" style="width: 90px; height: 90px">
             @endif
         </div>
+
         <button class="btn btn-primary" type="submit">Save Changes</button>
+
     </form>
     <!-- <script>
         $('.summernote').summernote({

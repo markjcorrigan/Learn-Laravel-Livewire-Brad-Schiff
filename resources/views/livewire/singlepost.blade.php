@@ -1,6 +1,8 @@
 <x-layout :doctitle="$post->title">
     <div class="container py-md-5 container--narrow">
         <div class="d-flex justify-content-between">
+            @include('flash::message')
+
             <h2>{{$post->title}}</h2>
             @can('update', $post)
             <span class="pt-2">
